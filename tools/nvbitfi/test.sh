@@ -70,12 +70,13 @@ cd $CWD
 # stderr files. User must generate this before starting the injection campaign.
 ###############################################################################
 printf "\nStep 0 (4): Run and collect output without instrumentation\n"
-# cd test-apps/simple_add/
-# make 2> stderr.txt
-# make golden
-# cd $CWD
 
 cd test-apps/darknet1img_tiny/
+make 2> stderr.txt
+make golden
+cd $CWD
+
+cd test-apps/vectorAdd/vectorAdd32_64/
 make 2> stderr.txt
 make golden
 cd $CWD

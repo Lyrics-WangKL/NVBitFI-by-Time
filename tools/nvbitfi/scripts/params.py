@@ -22,7 +22,7 @@ TIMEOUT_THRESHOLD = params_obj.timeout
 #######################################################################
 # Specify testbench, instruction type, fault model
 #######################################################################
-selected_apps = ['darknet1img_tiny']
+selected_apps = ['darknet1img_tiny', 'vectorAdd32_64']
 selected_instruction_type = [G_GP]
 selected_faultmodel = [[FLIP_SINGLE_BIT]]
 
@@ -55,10 +55,9 @@ def set_paths():
 		bin_dir[app] = merged_apps[app][2]
 		app_dir[app] = merged_apps[app][0]
 		script_dir[app] = merged_apps[app][0]
-		app_data_dir[app] = merged_apps[app][0]
-	if 'darknet' in app:
-		app_data_dir[app] = NVBITFI_HOME + "/test-apps/test-apps-dependencies/darknet_data"
-	else:
-		app_data_dir[app] = NVBITFI_HOME + "/test-apps/test-apps-dependencies/rodinia_data/" + app
+		if 'darknet' in app:
+			app_data_dir[app] = NVBITFI_HOME + "/test-apps/test-apps-dependencies/darknet_data"
+		else:
+			app_data_dir[app] = NVBITFI_HOME + "/test-apps/test-apps-dependencies/rodinia_data/" + app
 
 set_paths()
