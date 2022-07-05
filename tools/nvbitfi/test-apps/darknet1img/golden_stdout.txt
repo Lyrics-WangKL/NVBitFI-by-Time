@@ -1,0 +1,17 @@
+net.optimized_memory = 0 
+mini_batch = 1, batch = 64, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+
+ seen 64, trained: 448 K-images (7 Kilo-batches_64) 
+ Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+Car: 93%	(left_x:  217   top_y:  152   width:  282   height:  199)
+Car: 95%	(left_x:  382   top_y:  191   width:  132   height:   96)
+Car: 97%	(left_x:  512   top_y:  190   width:   50   height:   38)
+Car: 70%	(left_x:  658   top_y:  193   width:   43   height:   35)
+Car: 93%	(left_x:  682   top_y:  197   width:   55   height:   46)
+Car: 85%	(left_x:  730   top_y:  198   width:  100   height:   79)
+Car: 99%	(left_x:  750   top_y:  206   width:  169   height:  107)
+Car: 100%	(left_x:  886   top_y:  223   width:  361   height:  154)
