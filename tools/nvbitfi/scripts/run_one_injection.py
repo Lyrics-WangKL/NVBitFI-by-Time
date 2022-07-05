@@ -133,16 +133,16 @@ def get_inj_info():
 	if os.path.isfile(p.inj_run_log): 
 		logf = open(p.inj_run_log, "r")
 		for line in logf:
-                        if "beforeVal" in line:
-                            value_str = line.strip().replace("beforeVal: ", "value_before").replace(";afterVal: ", ":value_after")
-                        if "opcode" in line:
-                            inst_type = line.split(":")[1].strip()
-                        if "pcOffset" in line:
-                            pc = line.split(":")[1].strip()
-                        if "tid" in line:
-                            tid = line.split(":")[1].strip()
-                        if "mask" in line:
-                            injBID = line.split(":")[1].strip()
+			if "beforeVal" in line:
+				value_str = line.strip().replace("beforeVal: ", "value_before").replace(";afterVal: ", ":value_after")
+			if "opcode" in line:
+				inst_type = line.split(":")[1].strip()
+			if "pcOffset" in line:
+				pc = line.split(":")[1].strip()
+			if "tid" in line:
+				tid = line.split(":")[1].strip()
+			if "mask" in line:
+				injBID = line.split(":")[1].strip()
 
 		logf.close()
 	return [value_str, pc, inst_type, tid, injBID]

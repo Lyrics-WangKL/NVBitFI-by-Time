@@ -101,4 +101,3 @@ def set_env(app, is_profiler):
 	if p.verbose: print ("PRELOAD_FLAG=%s" %(os.environ['PRELOAD_FLAG']))
 	if p.verbose: print ("RODINIA=%s" %(os.environ['RODINIA']))
 	if p.verbose: print ("APP_DIR=%s" %(os.environ['APP_DIR']))
-

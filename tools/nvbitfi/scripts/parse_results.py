@@ -196,7 +196,7 @@ def get_igid_str(inj_mode, igid):
 def print_stats_tsv(typ):
 	f = open(fname_prefix + "stats.tsv", "w")
 	f.write("\t".join(["App", "IGID", "Injection Model", "Num Jobs", "Total Runtime", "Total Runtime without Timeouts"]) + "\n")
-
+	print(num_injections_app_table)
 	for app in num_injections_app_table: 
 		f.write(app + "\t") 
 

@@ -1,42 +1,57 @@
 import os, sys
 from parameters_setup.constant_parameters import *
-PYTHON_P = "python"
-
-TIMEOUT_THRESHOLD = 10 # 10X usual runtime 
-
-if 'NVBITFI_HOME' not in os.environ:
-	print ("Error: Please set NVBITFI_HOME environment variable")
-	sys.exit(-1)
-NVBITFI_HOME = os.environ['NVBITFI_HOME']
-
-# verbose = True
-verbose = False
-detectors = True
-
-# Keep per-app injection logs: This can be helpful for debugging. If this flag
-# is set to false, per-injection logs will be deleted. A detailed summary will
-# be captured in the results file. 
-keep_logs = True
 
 #######################################################################
 # A customized class to setup user-defined parameters
 #######################################################################
 class UserParameters:
-	def __init__(self, appdir=NVBITFI_HOME+'/test-apps', injections=1000, threshold_jobs=384):
+	def __init__(self, appdir=NVBITFI_HOME+'/test-apps', injections=1000, threshold_jobs=384, timeout_threshold=30, dummy=False):
 		self.appdir = appdir
-		self.injections = 1000
-		self.threshold_job = 384
-
+		self.injections = injections
+		self.threshold_job = threshold_jobs
+		self.timeout = timeout_threshold
+		if dummy:
+			self.threshold_job = 5
 		assert(threshold_jobs <= injections)
 
+
 	def igid2bfm_map(self, instructionTypes, faultModels):
-		return {}
+		igid2bfm_map = {}
+		for igid in instructionTypes:
+			keys = igid
+			for model in faultModels:
+				igid2bfm_map[keys] = model
+		return igid2bfm_map
+
 
 	# app_scan method scans appdir, returns a dictionary of apps
-	def app_scan(self):
-		return {}
+	def apps_scan(self, runtime=2, additional_params=""):
+		apps_dict = {}
+		for curr_dir, containing_dir, contained_file in os.walk(self.appdir):
+			app_info = []
+			if 'test-apps-dependencies' in curr_dir:
+				continue
+			else:
+				if "sdc_check.sh" in contained_file:
+					curr_dirname = curr_dir.split('/')[-1]
+					app_info = [curr_dir, # workload directory
+					curr_dirname, # binary_name
+					curr_dir,
+					runtime,
+					additional_params
+					]
+					apps_dict[curr_dirname] = app_info
+		return apps_dict
 
 	# aggreated parsed bfm2app dictionary, returns a dictionary of apps amd bfm_map
-	def params_aggregate(self, selected_list):
-		return {}
+	def params_aggregate(self, selected_appname, inst_types, fault_models):
+		apps_dict = self.apps_scan()
+		bfm_map = self.igid2bfm_map(inst_types, fault_models)
+		selected_apps = {key: apps_dict[key] for key in selected_appname}
+		aggregated_params = {
+		'selected_apps': selected_apps,
+        'igid_bfm_map': bfm_map 
+		}
+		return aggregated_params
+		
 

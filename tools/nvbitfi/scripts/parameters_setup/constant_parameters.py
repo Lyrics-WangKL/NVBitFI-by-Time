@@ -2,8 +2,6 @@ import os, sys
 
 PYTHON_P = "python"
 
-TIMEOUT_THRESHOLD = 10 # 10X usual runtime 
-
 if 'NVBITFI_HOME' not in os.environ:
 	print ("Error: Please set NVBITFI_HOME environment variable")
 	sys.exit(-1)
@@ -96,8 +94,24 @@ CAT_STR = ["Masked: Error was never read", "Masked: Write before read",
 "SDC: App specific check failed", "Uncategorized"]
 
 #########################################################################
+# Parameterizing file names
+#########################################################################
+run_script = "run.sh"
+nvbit_profile_log = "nvbitfi-igprofile.txt"
+injection_seeds = "nvbitfi-injection-info.txt"
+inj_run_log = "nvbitfi-injection-log-temp.txt"
+stdout_file = "stdout.txt"
+stderr_file = "stderr.txt"
+output_diff_log = "diff.log"
+stdout_diff_log = "stdout_diff.log"
+stderr_diff_log = "stderr_diff.log"
+special_sdc_check_log = "special_check.log"
+
+#########################################################################
 # Number of gpus to use for error injection runs
 #########################################################################
 NUM_GPUS = 1
 
 use_filelock = False
+
+
