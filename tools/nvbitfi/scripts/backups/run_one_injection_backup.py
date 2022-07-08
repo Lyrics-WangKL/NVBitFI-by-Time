@@ -43,7 +43,7 @@ def get_seconds(td):
 # Set enviroment variables for run_script
 ###############################################################################
 [stdout_fname, stderr_fname, injection_seeds_file, new_directory] = ["", "", "", ""]
-def set_env_variables(inj_mode, app, igid, bfm, icount, mode='vanilla', group_id=0): # Set directory paths 
+def set_env_variables(inj_mode, app, igid, bfm, icount): # Set directory paths 
 	if inj_mode == p.RF_MODE:
 		p.rf_inst = "rf"
 	elif inj_mode == p.INST_VALUE_MODE:
@@ -53,12 +53,8 @@ def set_env_variables(inj_mode, app, igid, bfm, icount, mode='vanilla', group_id
 
 	p.set_paths() # update paths 
 	global stdout_fname, stderr_fname, injection_seeds_file, new_directory
-	if mode=='vanilla':
-		new_directory = p.NVBITFI_HOME + "/logs/" + app + "/" + app + "-group" + igid + "-model" + bfm + "-icount" + icount
-	elif mode=='kernels':
-		new_directory = p.NVBITFI_HOME + "/logs/" + app + "/" + app + '-kernels-group' + group_id + "-group" + igid + "-model" + bfm + "-icount" + icount
-	elif mode=='insts':
-		new_directory = p.NVBITFI_HOME + "/logs/" + app + "/" + app + '-insts-group' + group_id + "-group" + igid + "-model" + bfm + "-icount" + icount
+	
+	new_directory = p.NVBITFI_HOME + "/logs/" + app + "/" + app + "-group" + igid + "-model" + bfm + "-icount" + icount
 	stdout_fname = new_directory + "/" + p.stdout_file 
 	stderr_fname = new_directory + "/" + p.stderr_file
 	injection_seeds_file = new_directory + "/" + p.injection_seeds
@@ -71,18 +67,8 @@ def set_env_variables(inj_mode, app, igid, bfm, icount, mode='vanilla', group_id
 # Record result in to a common file. This function uses file-locking such that
 # mutliple parallel jobs can run safely write results to the file
 ###############################################################################
-def record_result(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, cat, pc, inst_type, tid, injBID, runtime, dmesg, value_str, icount, mode="vanilla", group_id=""):
-	if mode == "vanilla":
-		res_fname = p.app_log_dir[app] + "/results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
-	elif mode == "kernels":
-		res_fname = p.app_log_dir[app] + "/results-mode"  + inj_mode + "-kernels-group" + str(group_id) + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
-	elif mode == "insts":
-		res_fname = p.app_log_dir[app] + "/results-mode" + inj_mode + "-insts-group" + str(group_id) + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
-	else:
-		print('problem in record results')
-		print_usage()
-		sys.exit(1)
-
+def record_result(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, cat, pc, inst_type, tid, injBID, runtime, dmesg, value_str, icount):
+	res_fname = p.app_log_dir[app] + "/results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
 	result_str = icount + ";" + kname + ";" + kcount + ";" + iid + ";" + opid 
 	result_str += ";" + bid + ":" + str(pc) + ":" + str(inst_type) + ":" +  str(tid) 
 	result_str += ":" + str(injBID) + ":" + str(runtime) + ":" + str(cat) + ":" + str(dmesg)
@@ -191,11 +177,11 @@ def classify_injection(app, igid, kname, kcount, iid, opid, bid, retcode, dmesg_
 		print (inj_log_str)
 		if p.verbose: print ("Error Not Injected: %s, %s, %s, %s, %s, %s" %(igid, kname, kcount, iid, opid, bid))
 		return p.OTHERS
-	if "misaligned address" in stdout_str: 
+	if "Error: misaligned address" in stdout_str: 
 		return p.STDOUT_ERROR_MESSAGE
-	if "an illegal memory access was encountered" in stdout_str: 
+	if "Error: an illegal memory access was encountered" in stdout_str: 
 		return p.STDOUT_ERROR_MESSAGE
-	if "misaligned address" in str(open(stderr_fname).read()): # if error is found in the log standard err 
+	if "Error: misaligned address" in str(open(stderr_fname).read()): # if error is found in the log standard err 
 		return p.STDOUT_ERROR_MESSAGE
 
 	os.system(p.script_dir[app] + "/sdc_check.sh") # perform SDC check
@@ -253,7 +239,7 @@ def is_timeout(app, pr): # check if the process is active every 'factor' sec for
 	factor = 0.5
 	retcode = None
 	tt = p.TIMEOUT_THRESHOLD * p.apps[app][3] # p.apps[app][2] = expected runtime
-	# if tt < 10: tt = 10
+	if tt < 10: tt = 10
 
 	to_th = tt / factor
 	while to_th > 0:
@@ -278,7 +264,7 @@ def get_dmesg_delta(dm_before, dm_after):
 ###############################################################################
 # Run the actual injection run 
 ###############################################################################
-def run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount, mode, gid):
+def run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount):
 	start = datetime.datetime.now() # current time
 	[pc, inst_type, tid, injBID, ret_vat] = ["", "", -1, -1, -1]
 
@@ -318,7 +304,7 @@ def run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bi
 	# print (ret_cat)
 
 	elapsed = datetime.datetime.now() - start
-	record_result(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, ret_cat, pc, inst_type, tid, injBID, get_seconds(elapsed), dmesg_delta, value_str, icount, mode, gid)
+	record_result(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, ret_cat, pc, inst_type, tid, injBID, get_seconds(elapsed), dmesg_delta, value_str, icount)
 
 	if get_seconds(elapsed) < 0.5: time.sleep(0.5)
 	if not p.keep_logs:
@@ -331,24 +317,18 @@ def run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bi
 ###############################################################################
 def main(): 
 	# print ("run_one_injection.py: kname=%s, argv[8]=%s" %(sys.argv[5], sys.argv[8])
-	# print(sys.argv)
-	'''
-		[<path to pwd>, 'inst_value', '7', '0', 'yolo_tiny', <kname>, <kernelcnt>, <iid>, '0.6583529207275547', '0.658235062733477', '10']
-	'''
-
 	# check if paths exit
 	if not os.path.isdir(p.NVBITFI_HOME): print ("Error: Regression dir not found!")
 	if not os.path.isdir(p.NVBITFI_HOME + "/logs/results"): os.system("mkdir -p " + p.NVBITFI_HOME + "/logs/results") # create directory to store summary
 
-	if len(sys.argv) == 13:
+	if len(sys.argv) == 11:
 		start= datetime.datetime.now()
-		[inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount, mode, gid] = sys.argv[1:]
-		set_env_variables(inj_mode, app, igid, bfm, icount, mode, gid) 
-		err_cat = run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount, mode, gid) 
+		[inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount] = sys.argv[1:]
+		set_env_variables(inj_mode, app, igid, bfm, icount) 
+		err_cat = run_one_injection_job(inj_mode, igid, bfm, app, kname, kcount, iid, opid, bid, icount) 
 		elapsed = datetime.datetime.now() - start
 		print ("Inj_count=%s, App=%s, Mode=%s, Group=%s, EM=%s, Time=%f, Outcome: %s" %(icount, app, inj_mode, igid, bfm, get_seconds(elapsed), p.CAT_STR[err_cat-1]))
 	else:
-		print('problem in arguments count')
 		print_usage()
 
 if __name__ == "__main__":
