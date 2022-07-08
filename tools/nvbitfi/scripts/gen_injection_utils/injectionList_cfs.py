@@ -73,3 +73,17 @@ def gen_faultsite_str(igid, countList, injection_site):
 	inj_bid_seed = random.random() 
 	selected_str = inj_kname + " " + str(inj_kcount) + " " + str(inj_icount) + " " + str(inj_op_id_seed) + " " + str(inj_bid_seed) + " "
 	return selected_str
+
+def write_fault_site(f, igid, countList, total_count, injection_counter, start=0, end=0, verbose=False, scope='vanilla'):
+	if scope == 'vanilla' or scope == 'kernels': # If conducting kernel level / vanilla injection, start is 0, end is the total_count
+		start = 0
+		end = total_count
+	inj_site_idx = random.randint(start, end)
+
+	[inj_kname, inj_kcount, inj_icount] = get_injection_site_info(countList, inj_site_idx, igid) # convert injection index to [kname, kernel count, inst index]
+	inj_op_id_seed = random.random()
+	inj_bid_seed = random.random() 
+	selected_str = inj_kname + " " + str(inj_kcount) + " " + str(inj_icount) + " " + str(inj_op_id_seed) + " " + str(inj_bid_seed) + " "
+	if verbose:
+		print ("%d/%d: Selected between: %d and %d /%s" %(injection_counter, end - start, start, end, selected_str))
+	f.write(selected_str + "\n") # print injection site information
