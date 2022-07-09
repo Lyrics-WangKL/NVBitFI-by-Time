@@ -28,7 +28,6 @@
 
 import os, sys, re, string, operator, math, datetime, subprocess, time, multiprocessing, pkgutil
 import params as p
-import common_functions as cf
 
 ###############################################################################
 # Basic functions and parameters
@@ -60,14 +59,9 @@ def get_log_name(app, inj_mode, igid, bfm):
 # old logs, use this function.
 ############################################################################
 def clear_results_file(app):
-	for bfm in p.rf_bfm_list: 
-		open(get_log_name(app, p.RF_MODE, "rf", bfm)).close()
 	for igid in p.inst_value_igid_bfm_map:
 		for bfm in p.inst_value_igid_bfm_map[igid]:
 			open(get_log_name(app, p.INST_VALUE_MODE, igid, bfm)).close()
-	for igid in p.inst_address_igid_bfm_map:
-		for bfm in p.inst_address_igid_bfm_map[igid]:
-			open(get_log_name(app, p.INST_ADDRESS_MODE, igid, bfm)).close()
 
 ############################################################################
 # count how many jobs are done
@@ -100,14 +94,11 @@ def check_and_submit_multigpu(cmd):
 ###############################################################################
 # Run Multiple injection experiments
 ###############################################################################
-def run_multiple_injections_igid(app, inj_mode, igid, where_to_run, mode='vanilla', n_groups=10):
+def run_multiple_injections_igid(app, inj_mode, igid, where_to_run, mode, n_groups):
 	bfm_list = [] 
-	if inj_mode == p.RF_MODE: 
-		bfm_list = p.rf_bfm_list 
+
 	if inj_mode == p.INST_VALUE_MODE:
 		bfm_list = p.inst_value_igid_bfm_map[igid]
-	if inj_mode == p.INST_ADDRESS_MODE:
-		bfm_list = p.inst_address_igid_bfm_map[igid]
 
 	if mode == "vanilla": 
 		for bfm in bfm_list:
@@ -137,11 +128,11 @@ def run_multiple_injections_igid(app, inj_mode, igid, where_to_run, mode='vanill
 				else:
 					print ("Line doesn't have enough params:%s" %line)
 				print_heart_beat(total_jobs)
-	elif mode == 'kernels':
+	elif mode == 'kernels' or mode == 'insts':
 		for bfm in bfm_list:
 			for i in range(n_groups):
 				total_jobs = 0
-				inj_list_filename = p.app_log_dir[app] + "/injection-list-kernels-group" + str(i) + "/mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
+				inj_list_filename = f'{p.app_log_dir[app]}injection-list-{mode}-group-{str(i)}/mode{inj_mode}-igid{str(igid)}.bfm{(str(bfm))}.{p.NUM_INJECTIONS}.txt'
 				inf = open(inj_list_filename, "r")
 				for line in inf: # for each injection site 
 					total_jobs += 1
@@ -164,33 +155,8 @@ def run_multiple_injections_igid(app, inj_mode, igid, where_to_run, mode='vanill
 					else:
 						print ("Line doesn't have enough params:%s" %line)
 			print_heart_beat(total_jobs)
-	elif mode == 'insts':
-		for bfm in bfm_list:
-			for i in range(n_groups):
-				total_jobs = 0
-				inj_list_filename = p.app_log_dir[app] + "injection-list-insts-group-" + str(i) + "/mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt"
-				inf = open(inj_list_filename, "r")
-				for line in inf: # for each injection site 
-					total_jobs += 1
-					if total_jobs > p.THRESHOLD_JOBS: 
-						break; # no need to run more jobs
-					l = line.strip().split() #Example: _Z24bpnn_adjust_weights_cudaPfiS_iS_S_ 0 1297034 0.877316323856 0.214340876321
-					if len(l) >= 5: 
-						[kcount, iid, opid, bid] = l[-4:] # obtains params for this injection
-						kname = "".join(l[:-4]) # kernel name should contain all the arguments, with no spaces
-						if p.verbose: print ("\n%d: app=%s, Kernel=%s, kcount=%s, igid=%d, bfm=%d, instID=%s, opID=%s, bitLocation=%s" %(total_jobs, app, kname, kcount, igid, bfm, iid, opid, bid))
-						cmd = "%s %s/scripts/run_one_injection.py %s %s %s %s %s %s %s %s %s %s %s %s" %(p.PYTHON_P, p.NVBITFI_HOME, inj_mode, str(igid), str(bfm), app, "\""+kname+"\"", kcount, iid, opid, bid, total_jobs, mode, str(i))
-						if p.verbose: print (cmd)
-						if where_to_run == "cluster":
-							check_and_submit_cluster(cmd)
-						elif where_to_run == "multigpu":
-							check_and_submit_multigpu(cmd)
-						else:
-							os.system(cmd)
-						if p.verbose: print ("done injection run ")
-					else:
-						print ("Line doesn't have enough params:%s" %line)
-			print_heart_beat(total_jobs)
+	else:
+		print_usage()
 
 
 
@@ -205,8 +171,6 @@ def run_multiple_injections(app, inj_mode, where_to_run, mode='vanilla', n_group
 		igid_list = []
 		if inj_mode == p.INST_VALUE_MODE:
 			igid_list = p.inst_value_igid_bfm_map
-		elif inj_mode == p.INST_ADDRESS_MODE:
-			igid_list = p.inst_address_igid_bfm_map
 		for igid in igid_list: 
 			run_multiple_injections_igid(app, inj_mode, igid, where_to_run, mode, n_groups=n_groups)
 
@@ -215,8 +179,10 @@ def run_multiple_injections(app, inj_mode, where_to_run, mode='vanilla', n_group
 ###############################################################################
 def main(): 
 	groups = 10
-	if len(sys.argv) >= 2: 
+	if len(sys.argv) >= 4: 
 		where_to_run = sys.argv[1]
+		scope = sys.argv[2]
+		groups = int(sys.argv[3])
 	
 		if where_to_run != "standalone":
 			if pkgutil.find_loader('lockfile') is None:
@@ -231,7 +197,7 @@ def main():
 				if sys.argv[2] == "clean":
 					clear_results_file(app) # clean log files only if asked for
 	
-			run_multiple_injections(app, "inst_value", where_to_run, mode='insts', n_groups=groups)
+			run_multiple_injections(app, "inst_value", where_to_run, mode=scope, n_groups=groups)
 	
 	else:
 		print_usage()

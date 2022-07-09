@@ -83,7 +83,7 @@ class injectionList_generator:
                 kernel_groups = list(gfs.NaiveGroup_kernel(countList, n_groups)) # Using naive kernel level grouping function
                 for group_idx, countList_group in enumerate(kernel_groups):
                     for igid in self.instbfm_map:
-                        for bfm in self.instbfm_map:
+                        for bfm in self.instbfm_map[igid]:
                             total_icounts = cf_inj_gen.get_total_counts(countList_group)
                             self.write_injection_list_file(app, igid, bfm, countList_group, total_icounts[igid - self.num_inst_groups], group_id = group_idx)
             else:

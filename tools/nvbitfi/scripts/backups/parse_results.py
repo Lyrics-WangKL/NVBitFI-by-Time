@@ -25,80 +25,65 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from distutils.dep_util import newer_group
 import os, sys, re, string, math, datetime, time, pkgutil
-
-# resovle path issues first
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
-
 import params as p
-import gen_injection_utils.injectionList_cfs as cf 
+import common_functions as cf 
 
 output_format = []
-for cat in range(p.NUM_CATS - 1):
+for cat in range(p.NUM_CATS-1):
 	output_format.append(p.CAT_STR[cat])
 
 fname_prefix = ""
 
 results_app_table = {} # app, igid, bfm, outcome, 
-results_app_insts_group_table = {} # app, igid, bfm, outcome,
-results_app_kernels_group_table = {} # app, igid, bfm, outcome,
 num_injections_app_table = {} # app, igid, bfm, num_injections
 runtime_app_table = {} # app, igid, bfm, runtime
 runtime_app_nt_table = {} # app, igid, bfm, runtime without Timeouts
 results_kname_table = {} # app, kname, igid, bfm, outcome, 
 results_kiid_table = {} # app, kname, kid, igid, bfm, outcome, 
 
-def check_and_create_nested_dict(dict_name, k0, k1, k2, k3, k4="", k5="", k6=""):
-	# print(dict_name, k1, k2, k3, k4, k5, k6)
-	if k0 not in dict_name:
-		dict_name[k0] = {}
-	if k1 not in dict_name[k0]:
-		dict_name[k0][k1] = {}
-	if k2 not in dict_name[k0][k1]:
-		dict_name[k0][k1][k2] = {}
-	if k3 not in dict_name[k0][k1][k2]:
-		dict_name[k0][k1][k2][k3] = 0 if k4 == "" else {}
+def check_and_create_nested_dict(dict_name, k1, k2, k3, k4="", k5="", k6=""):
+	if k1 not in dict_name:
+		dict_name[k1] = {}
+	if k2 not in dict_name[k1]:
+		dict_name[k1][k2] = {}
+	if k3 not in dict_name[k1][k2]:
+		dict_name[k1][k2][k3] = 0 if k4 == "" else {}
 	if k4 == "":
 		return
-	if k4 not in dict_name[k0][k1][k2][k3]:
-		dict_name[k0][k1][k2][k3][k4] = 0 if k5 == "" else {}
+	if k4 not in dict_name[k1][k2][k3]:
+		dict_name[k1][k2][k3][k4] = 0 if k5 == "" else {}
 	if k5 == "":
 		return
-	if k5 not in dict_name[k0][k1][k2][k3][k4]:
-		dict_name[k0][k1][k2][k3][k4][k5] = 0 if k6 == "" else {}
+	if k5 not in dict_name[k1][k2][k3][k4]:
+		dict_name[k1][k2][k3][k4][k5] = 0 if k6 == "" else {}
 	if k6 == "":
 		return
-	if k6 not in dict_name[k0][k1][k2][k3][k4][k5]:
-		dict_name[k0][k1][k2][k3][k4][k5][k6] = 0
-
-
-
+	if k6 not in dict_name[k1][k2][k3][k4][k5]:
+		dict_name[k1][k2][k3][k4][k5][k6] = 0
 
 ###############################################################################
 # Add the injection result to the results*table dictionary 
 ###############################################################################
-def add(app, kname, kiid, igid, bfm, outcome, runtime, group_id=0):
-	check_and_create_nested_dict(results_app_table, app, group_id ,igid, bfm, outcome)
-	results_app_table[app][group_id][igid][bfm][outcome] += 1
+def add(app, kname, kiid, igid, bfm, outcome, runtime):
+	check_and_create_nested_dict(results_app_table, app, igid, bfm, outcome)
+	results_app_table[app][igid][bfm][outcome] += 1
 
-	check_and_create_nested_dict(num_injections_app_table, app, group_id, igid, bfm)
-	num_injections_app_table[app][group_id][igid][bfm] += 1
+	check_and_create_nested_dict(num_injections_app_table, app, igid, bfm)
+	num_injections_app_table[app][igid][bfm] += 1
 
-	check_and_create_nested_dict(runtime_app_table, app, group_id, igid, bfm)
-	runtime_app_table[app][group_id][igid][bfm] += runtime
+	check_and_create_nested_dict(runtime_app_table, app, igid, bfm)
+	runtime_app_table[app][igid][bfm] += runtime
 
 	if outcome != p.TIMEOUT: 
-		check_and_create_nested_dict(runtime_app_nt_table, app, group_id, igid, bfm)
-		runtime_app_nt_table[app][group_id][igid][bfm] += runtime
+		check_and_create_nested_dict(runtime_app_nt_table, app, igid, bfm)
+		runtime_app_nt_table[app][igid][bfm] += runtime
 
-	check_and_create_nested_dict(results_kname_table, app, group_id, kname, igid, bfm, outcome)
-	results_kname_table[app][group_id][kname][igid][bfm][outcome] += 1
+	check_and_create_nested_dict(results_kname_table, app, kname, igid, bfm, outcome)
+	results_kname_table[app][kname][igid][bfm][outcome] += 1
 
-	check_and_create_nested_dict(results_kiid_table, app, group_id, kname, kiid, igid, bfm, outcome)
-	results_kiid_table[app][group_id][kname][kiid][igid][bfm][outcome] += 1
+	check_and_create_nested_dict(results_kiid_table, app, kname, kiid, igid, bfm, outcome)
+	results_kiid_table[app][kname][kiid][igid][bfm][outcome] += 1
 
 
 ###############################################################################
@@ -126,28 +111,13 @@ def print_inst_fractions_tsv():
 	f.close()
 
 
-def parse_results_file(app, inj_mode, igid, bfm, mode='vanilla', group_id=0):
-	if mode=='vanilla':
-		try:
-			rf = open(p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt", "r")
-		except IOError: 
-			print ("Error opening file: " + p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
-			print ("It is possible that no injections were performed for app=%s, inj_mode=%s, igid=%s, bfm=%s " %(app, inj_mode, str(igid), str(bfm)))
-			return
-	elif mode=='kernels':
-		try:
-			rf = open(p.app_log_dir[app] + "/results-mode"  + inj_mode + "-kernels-group" + str(group_id) + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
-		except IOError: 
-			print ("Error opening file: " + p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
-			print ("It is possible that no injections were performed for app=%s, inj_mode=%s, igid=%s, bfm=%s " %(app, inj_mode, str(igid), str(bfm)))
-			return
-	elif mode=='insts':
-		try:
-			rf = open(p.app_log_dir[app] + "/results-mode"  + inj_mode + "-insts-group" + str(group_id) + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
-		except IOError: 
-			print ("Error opening file: " + p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
-			print ("It is possible that no injections were performed for app=%s, inj_mode=%s, igid=%s, bfm=%s " %(app, inj_mode, str(igid), str(bfm)))
-			return
+def parse_results_file(app, inj_mode, igid, bfm):
+	try:
+		rf = open(p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt", "r")
+	except IOError: 
+		print ("Error opening file: " + p.app_log_dir[app] + "results-mode" + inj_mode + "-igid" + str(igid) + ".bfm" + str(bfm) + "." + str(p.NUM_INJECTIONS) + ".txt")
+		print ("It is possible that no injections were performed for app=%s, inj_mode=%s, igid=%s, bfm=%s " %(app, inj_mode, str(igid), str(bfm)))
+		return 
 
 	num_lines = 0
 	for line in rf: # for each injection site 
@@ -157,7 +127,7 @@ def parse_results_file(app, inj_mode, igid, bfm, mode='vanilla', group_id=0):
 		words1 = line.split(";")
 		words2 = words1[5].split(":")
 		[kname, invocation_index, opcode, injBID, runtime, outcome] = [words1[1], int(words1[2]), words2[2], words2[4], float(words2[5]), int(words2[6])]
-		add(app, kname, invocation_index, igid, bfm, outcome, runtime, group_id)
+		add(app, kname, invocation_index, igid, bfm, outcome, runtime)
 		num_lines += 1
 	rf.close()
 
@@ -167,15 +137,12 @@ def parse_results_file(app, inj_mode, igid, bfm, mode='vanilla', group_id=0):
 ###################################################################################
 # Parse results files and populate summary to results table 
 ###################################################################################
-def parse_results_apps(typ, mode, n_groups): 
+def parse_results_apps(typ): 
 	for app in p.parse_apps:
 		if typ == p.INST_VALUE_MODE:
 			for igid in p.parse_inst_value_igid_bfm_map:
 				for bfm in p.parse_inst_value_igid_bfm_map[igid]:
-					if mode == 'insts' or mode=='kernels':
-						for i in range(n_groups):
-							parse_results_file(app, typ, igid, bfm, mode ,i)
-			
+					parse_results_file(app, typ, igid, bfm)
 		elif typ == p.INST_ADDRESS_MODE:
 			for igid in p.parse_inst_address_igid_bfm_map:
 				for bfm in p.parse_inst_address_igid_bfm_map[igid]:
@@ -229,7 +196,6 @@ def get_igid_str(inj_mode, igid):
 def print_stats_tsv(typ):
 	f = open(fname_prefix + "stats.tsv", "w")
 	f.write("\t".join(["App", "IGID", "Injection Model", "Num Jobs", "Total Runtime", "Total Runtime without Timeouts"]) + "\n")
-
 	for app in num_injections_app_table: 
 		f.write(app + "\t") 
 
@@ -253,24 +219,24 @@ def print_stats_tsv(typ):
 def print_detailed_results_tsv(typ):
 	f = open(fname_prefix + "NVBitFI_details.tsv", "w")
 	f.write("\t".join(["App", "IGID", "Injection Model"] + output_format) + "\n")
+
 	for app in results_app_table: 
-		for groupid in results_app_table[app]:
-			f.write(app + "group" + str(groupid)+ "\t") # write app name
-			igid_list = get_igid_list(typ)
-			for igid in igid_list: 
-				f.write(get_igid_str(typ, igid) + "\t")
+		f.write(app + "\t") # write app name
 
-				bfm_list = get_bfm_list(typ, igid)
-				for bfm in bfm_list: 
-					written = False
-					if igid in results_app_table[app][groupid]:
-						if bfm in results_app_table[app][groupid][igid]:
-							f.write("\t".join([p.EM_STR[bfm]] + list(map(str,to_list(results_app_table[app][groupid][igid][bfm], p.NUM_CATS)))) + "\n")
-							written = True
-					if not written:
-						f.write("\t".join([p.EM_STR[bfm]] + list(map(str,to_list({}, p.NUM_CATS)))))
+		igid_list = get_igid_list(typ)
+		for igid in igid_list: 
+			f.write(get_igid_str(typ, igid) + "\t")
+
+			bfm_list = get_bfm_list(typ, igid)
+			for bfm in bfm_list: 
+				written = False
+				if igid in results_app_table[app]:
+					if bfm in results_app_table[app][igid]:
+						f.write("\t".join([p.EM_STR[bfm]] + list(map(str,to_list(results_app_table[app][igid][bfm], p.NUM_CATS)))) + "\n")
+						written = True
+				if not written:
+					f.write("\t".join([p.EM_STR[bfm]] + list(map(str,to_list({}, p.NUM_CATS)))))
 	f.close()
-
 
 ###############################################################################
 # Main function that processes files, analyzes results and prints them to an
@@ -278,13 +244,8 @@ def print_detailed_results_tsv(typ):
 ###############################################################################
 def main():
 	inj_type = "inst_value"
-
-	if len(sys.argv) >= 2:
-		scope = sys.argv[1]
-		n_groups = int(sys.argv[2])
-
-	parse_results_apps(inj_type, scope, n_groups) # parse sassifi results into local data structures
-
+			
+	parse_results_apps(inj_type) # parse sassifi results into local data structures
 	# populate instruction fractions
 	populate_inst_fraction()
 
@@ -293,11 +254,10 @@ def main():
 
 	print_inst_fractions_tsv()
 	print_detailed_results_tsv(inj_type)
-	# print_stats_tsv(inj_type)
+	print_stats_tsv(inj_type)
 
 	print ("Results: %s" %(p.NVBITFI_HOME + "/logs/" + "results/"))
 
 
 if __name__ == "__main__":
     main()
-
