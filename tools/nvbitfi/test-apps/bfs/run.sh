@@ -1,0 +1,1 @@
+eval ${PRELOAD_FLAG} ${BIN_DIR}/bfs ${DATASET_DIR}/graph4096.txt > stdout.txt 2> stderr.txt
