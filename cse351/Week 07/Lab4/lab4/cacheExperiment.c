@@ -12,9 +12,9 @@ int main(int argc, char* argv[])
 
 	for ( rep = 0; rep < 10; rep++ )
 	{
-		for ( i = 0; i < 2048; i++ )
+		for ( j = 0; j < 2048; j++ )
 		{
-			for ( j = 0; j < 2048; j++ )
+			for ( i = 0; i < 2048; i++ )
 			{
 				//src[i][j] = i * rep;
 				dst[i][j] = src[i][j];
