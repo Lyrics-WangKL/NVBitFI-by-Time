@@ -29,6 +29,7 @@ import params as p
 import random
 
 from gen_injection_utils.injectionList_generator import injectionList_generator
+import gen_injection_utils.group_functions as gfs
 
 MAX_INJ = p.NUM_INJECTIONS
 verbose = False
@@ -57,12 +58,16 @@ def main():
 	if argv_ena and len(sys.argv) >= 2:
 		scope = sys.argv[1]
 		n_groups = int(sys.argv[2])
+		if scope == 'kernels':
+			group_function = gfs.NaiveGroup_kernel
+		elif scope == 'insts':
+			group_function = gfs.NaiveGroup_inst
 	else:
 		scope = 'kernels'
 		n_groups = 10
 
 	injection_list_obj = injectionList_generator(apps, instbfm_map, num_injection, scope, app_log_dir, num_inst_groups, inj_mode)
-	injection_list_obj.gen_lists(n_groups)
+	injection_list_obj.gen_lists(n_groups, group_function)
 
 if __name__ == "__main__":
     main()

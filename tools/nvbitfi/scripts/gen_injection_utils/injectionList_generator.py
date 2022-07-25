@@ -6,7 +6,7 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 import gen_injection_utils.injectionList_cfs as cf_inj_gen
-import gen_injection_utils.group_functions as gfs
+
 
 class injectionList_generator:
     def __init__(self, apps, instbfm_map, num_injections, scope, app_log_dir, num_inst_groups, inj_mode='inst_value', verbose = False):
@@ -60,7 +60,7 @@ class injectionList_generator:
             print(self.usage)
             exit(1)
 
-    def gen_lists(self, n_groups): # num_inst_group means the catagories of igid, which is defined in params.py/its setup scripts
+    def gen_lists(self, n_groups, group_function): # num_inst_group means the catagories of igid, which is defined in params.py/its setup scripts
         for app in self.apps:
             self.make_injList_dirs(app, n_groups)
             countList = cf_inj_gen.read_inst_counts(self.app_log_dir[app], app)
@@ -75,12 +75,22 @@ class injectionList_generator:
             elif self.scope == 'insts':
                 for igid in self.instbfm_map:
                     for bfm in self.instbfm_map[igid]:
-                        inst_groups = gfs.NaiveGroup_inst(total_icounts[igid - self.num_inst_groups], n_groups)  # Using naive inst level grouping function
+                        # inst_groups = gfs.NaiveGroup_inst(total_icounts[igid - self.num_inst_groups], n_groups)  # Using naive inst level grouping function
+                        try:
+                            inst_groups = group_function(total_icounts[igid - self.num_inst_groups], n_groups)
+                        except: 
+                            print("instruction level grouping expects a list total instruction count, and the number of groups")
+                            exit(1)
                         for group_idx in range(len(inst_groups) - 1):
                             start, end = inst_groups[group_idx], inst_groups[group_idx + 1]
                             self.write_injection_list_file(app, igid, bfm, countList, total_icounts[igid - self.num_inst_groups], start, end, group_idx)
             elif self.scope == 'kernels' and n_kernel_instsances >= n_groups:
-                kernel_groups = list(gfs.NaiveGroup_kernel(countList, n_groups)) # Using naive kernel level grouping function
+                # kernel_groups = list(gfs.NaiveGroup_kernel(countList, n_groups)) # Using naive kernel level grouping function
+                try:
+                    kernel_groups = list(group_function(countList, n_groups))
+                except:
+                    print("kernel level grouping expects a list of list of each kernel's total instruction count, and the number of groups")
+                    exit(1)
                 for group_idx, countList_group in enumerate(kernel_groups):
                     for igid in self.instbfm_map:
                         for bfm in self.instbfm_map[igid]:
