@@ -63,15 +63,79 @@ Depending on the programs under test or the goal of FI experiment, users can cho
 ### 2.4 Run FI
 Simply cd to ```nvbit/tools/nvbitfi```, and run ```./test.sh```. Or created your own bash scripts for FI control. 
 
-## 3. Preparing Programs under test
-**TODOs** 
+## 3. Prepare Programs under test
+Though we offered tens of ready-to-launch test programs, users can also test their own benchmarks. The steps of how to add new testbenches are:
+### 3.1. Understanding the structure of ```test-apps directory```
+Let's assume we have already got the binary executables **ready** (the steps of how to compile source codes in-place will be discussed later)
+
+First, ```cd``` to ```nvbit/tools/nvbitfi/test-apps```; 
+An example of test-apps directory is shown below:
+```bash
+├── bfs
+├── darknet1img
+├── darknet1img_tiny
+├── darknet1img_yolov4
+├── gaussian
+├── hotspot
+├── kmeans
+├── lud
+├── nn
+├── nw
+├── test-apps-dependencies
+│   ├── cudaSample_Common
+│   ├── darknet_data
+│   ├── rodinia_common
+│   └── rodinia_data
+└── vectorAdd
+    ├── vectorAdd1024_16
+    └── vectorAdd32_64
+```
+Where: 
+* ***bfs; darknet1img; gaussian; hotspot; ...... nw*** are "regular" benchmarks. Each of benchmark directory should contain the following files at least: 
+    * Binary excecutable
+    * ```run.sh``` shell script
+    * sdc checker ```sdc_check```
+    * Makefile (not have to be a **"complete"** Makefile) to generate golden references. 
+    * Necessary dependencies like input files
+    
+    For example, this is what it looks like in ```test-apps/bfs```
+    ```bash
+    ├── bfs
+    ├── bfs.cu
+    ├── golden_stderr.txt
+    ├── golden_stdout.txt
+    ├── graph4096.txt
+    ├── kernel2.cu
+    ├── kernel.cu
+    ├── Makefile
+    ├── Makefile_nvidia
+    ├── README
+    ├── run_bfs.sh
+    ├── run.sh
+    ├── sdc_check.sh
+    ├── stderr.txt
+    └── stdout.txt
+    ```
+* ***vectorAdd*** which contains multiple sub-folders are "grouped" benchmarks. Basically, these programs have exactly the same source codes (```.c or .cu```). The only difference is the difference between input arguments. 
+    * In this example, vectorAdd1024_16 means calling the vectorAdd kernel with a blocksize of 1024, and a grid size of 16
+    * vectorAdd32_64 calls the vectorAdd kernel with a blocksize of 32, and a grid size of 64
+* ***test-apps-dependencies*** are external input files to some testbench programs. 
+    * For example, the```darknet``` detector program will ask for **network configs**; pre-trained **weights**;  ```.data``` file that specifies ```names``` for detection. 
+
+**TODOs**
+### 3.2. Naming/Organization rules for test-apps
+
+### 3.3. If you also want to compile the CUDA application in-place......
+
 
 ## 4. Reference
-If you find our overhauled NVBitFI tool is useful, please cite the following paper: 
-* Hao Qiu, Semiu A. Olowogemo, Bor-Tyng Lin, William H. Robinson, and Daniel B. Limbrick. “Understanding time-varying vulnerability for efficient GPU program hardening”. *IEEE DFT 2022* 
+If you find our tool is useful, please consider citing the following papers: 
+* Hao Qiu, Semiu A. Olowogemo, Bor-Tyng Lin, William H. Robinson, and Daniel B. Limbrick. “Understanding time-varying vulnerability for efficient GPU program hardening”. *IEEE DFT 2022* (to be presented in October 2022)
+* Hao Qiu, Semiu A. Olowogemo, Bor-Tyng Lin, William H. Robinson, and Daniel B. Limbrick. “Understanding GPU Application Vulnerability across Program Lifetime”. *IEEE SELSE workshop 2022* (presented in May 2022)
 
 This work is inspired by the following works:
 * NVBitFI paper
     * T. Tsai, S. K. S. Hari, M. Sullivan, O. Villa, and S. W. Keckler, “NVBitFI: Dynamic fault injection for GPUs,” in IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), 2021
+   
 * A paper exploreed time-varying vulnerability of "smaller" GPU programs using SASSFI (the precedent of NVBitFI)
     * F. G. Previlon, C. Kalra, and D. R. Kaeli, "Characterizing and exploiting soft error vulnerability phase behavior in gpu applications," *IEEE Transactions on Dependable and Secure Computing*, 2020.
