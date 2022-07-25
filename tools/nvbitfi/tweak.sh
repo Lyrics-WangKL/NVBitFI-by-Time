@@ -75,10 +75,10 @@ printf "\nStep 0 (4): Run and collect output without instrumentation\n"
 # make golden
 # cd $CWD
 
-cd test-apps/darknet1img_tiny/
-make 2> stderr.txt
-make golden
-cd $CWD
+# cd test-apps/darknet1img_tiny/
+# make 2> stderr.txt
+# make golden
+# cd $CWD
 
 ###############################################################################
 # Step 1: Profile and generate injection list
@@ -90,4 +90,3 @@ cd $CWD
 ###############################################################################
 cd scripts/
 python parameters.py
-

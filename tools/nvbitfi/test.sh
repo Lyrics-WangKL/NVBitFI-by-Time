@@ -71,14 +71,14 @@ cd $CWD
 ###############################################################################
 printf "\nStep 0 (4): Run and collect output without instrumentation\n"
 
-cd test-apps/darknet1img_tiny/
-make 2> stderr.txt
-make golden
-cd $CWD
+# cd test-apps/darknet1img_tiny/
+# make 2> stderr.txt
+# make golden
+# cd $CWD
 
-cd test-apps/vectorAdd/vectorAdd32_64/
-make 2> stderr.txt
-make golden
+# cd test-apps/vectorAdd/vectorAdd32_64/
+# make 2> stderr.txt
+# make golden
 cd $CWD
 
 ###############################################################################
@@ -95,19 +95,22 @@ python run_profiler.py
 rm -f stdout.txt stderr.txt ### cleanup
 cd -
 
+scope="kernels"
+groups=10
+
 cd scripts/
 printf "\nStep 1 (2): Generate injection list for instruction-level error injections\n"
-python generate_injection_list.py 
+python generate_injection_list.py $scope $groups
 
-################################################
-# Step 2: Run the error injection campaign 
-################################################
+# # ################################################
+# # # Step 2: Run the error injection campaign 
+# # ################################################
 printf "\nStep 2: Run the error injection campaign"
-python run_injections.py standalone # to run the injection campaign on a single machine with single gpu
+python run_injections.py standalone $scope $groups # to run the injection campaign on a single machine with single gpu
 
-################################################
-# Step 3: Parse the results
-################################################
-printf "\nStep 3: Parse results"
-python parse_results.py
+# ################################################
+# # Step 3: Parse the results
+# ################################################
+printf "\nStep 3: Parse results\n"
+python parse_results.py $scope $groups
 
