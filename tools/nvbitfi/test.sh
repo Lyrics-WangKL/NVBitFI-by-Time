@@ -79,7 +79,21 @@ printf "\nStep 0 (4): Run and collect output without instrumentation\n"
 # cd test-apps/vectorAdd/vectorAdd32_64/
 # make 2> stderr.txt
 # make golden
+# cd $CWD
+# cd test-apps/vectorAdd/vectorAdd1024_16/
+# make 2> stderr.txt
+# make golden
+# cd $CWD
+
+cd test-apps/kmeans/
+make 2> stderr.txt
+make golden
 cd $CWD
+cd test-apps/gaussian/
+make 2> stderr.txt
+make golden
+cd $CWD
+
 
 ###############################################################################
 # Step 1: Profile and generate injection list
@@ -95,7 +109,7 @@ python run_profiler.py
 rm -f stdout.txt stderr.txt ### cleanup
 cd -
 
-scope="kernels"
+scope="insts"
 groups=10
 
 cd scripts/

@@ -63,7 +63,15 @@ Depending on the programs under test or the goal of FI experiment, users can cho
 ### 2.4 Run FI
 Simply cd to ```nvbit/tools/nvbitfi```, and run ```./test.sh```. Or created your own bash scripts for FI control. 
 
+## 3. Preparing Programs under test
+**TODOs** 
 
+## 4. Reference
+If you find our overhauled NVBitFI tool is useful, please cite the following paper: 
+* Hao Qiu, Semiu A. Olowogemo, Bor-Tyng Lin, William H. Robinson, and Daniel B. Limbrick. “Understanding time-varying vulnerability for efficient GPU program hardening”. *IEEE DFT 2022* 
 
-
-
+This work is inspired by the following works:
+* NVBitFI paper
+    * T. Tsai, S. K. S. Hari, M. Sullivan, O. Villa, and S. W. Keckler, “NVBitFI: Dynamic fault injection for GPUs,” in IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), 2021
+* A paper exploreed time-varying vulnerability of "smaller" GPU programs using SASSFI (the precedent of NVBitFI)
+    * F. G. Previlon, C. Kalra, and D. R. Kaeli, "Characterizing and exploiting soft error vulnerability phase behavior in gpu applications," *IEEE Transactions on Dependable and Secure Computing*, 2020.
