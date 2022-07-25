@@ -1,0 +1,1 @@
+eval ${PRELOAD_FLAG} ${BIN_DIR}/kmeans  -o -i ${DATASET_DIR}/kdd_cup > stdout.txt 2> stderr.txt

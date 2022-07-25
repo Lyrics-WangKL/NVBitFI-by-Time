@@ -22,8 +22,8 @@ TIMEOUT_THRESHOLD = params_obj.timeout
 #######################################################################
 # Specify testbench, instruction type, fault model
 #######################################################################
-selected_apps = ['bfs']
-# selected_apps = ['vectorAdd32_64']
+# selected_apps = ['bfs']
+selected_apps = ['gaussian', 'kmeans']
 selected_instruction_type = [G_GP]
 selected_faultmodel = [[FLIP_SINGLE_BIT]]
 
