@@ -1,0 +1,1 @@
+eval ${PRELOAD_FLAG} ${BIN_DIR}/nn ${BIN_DIR}/filelist_4 -r 3 -lat 30 -lng 90 > stdout.txt 2> stderr.txt

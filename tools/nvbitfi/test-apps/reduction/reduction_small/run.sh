@@ -1,0 +1,1 @@
+eval ${PRELOAD_FLAG} ${BIN_DIR}/reduction_small --n=32768 --threads=128 > stdout.txt 2> stderr.txt

@@ -1,0 +1,1 @@
+eval ${PRELOAD_FLAG} ${BIN_DIR}/hotspot 512 2 2 ${DATASET_DIR}/temp_512 ${DATASET_DIR}/power_512 > stdout.txt 2> stderr.txt

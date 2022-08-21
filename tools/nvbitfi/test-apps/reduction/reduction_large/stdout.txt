@@ -1,0 +1,13 @@
+GPU Device 0: "Ampere" with compute capability 8.6
+
+Using Device 0: NVIDIA GeForce RTX 3070 Ti
+
+Reducing array of type int
+
+16777216 elements
+128 threads (max)
+64 blocks
+
+
+GPU result = 33434317
+Test passed

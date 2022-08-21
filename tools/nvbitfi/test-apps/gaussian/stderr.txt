@@ -1,0 +1,15 @@
+gaussian.cu(170): warning: variable "time_total" was declared but never referenced
+
+gaussian.cu: In function ‘void ForwardSub()’:
+gaussian.cu:366:23: warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated [-Wdeprecated-declarations]
+  366 |   cudaThreadSynchronize();
+      |                       ^
+/usr/local/cuda/include/cuda_runtime_api.h:1048:46: note: declared here
+ 1048 | extern __CUDA_DEPRECATED __host__ cudaError_t CUDARTAPI cudaThreadSynchronize(void);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~
+gaussian.cu:368:23: warning: ‘cudaError_t cudaThreadSynchronize()’ is deprecated [-Wdeprecated-declarations]
+  368 |   cudaThreadSynchronize();
+      |                       ^
+/usr/local/cuda/include/cuda_runtime_api.h:1048:46: note: declared here
+ 1048 | extern __CUDA_DEPRECATED __host__ cudaError_t CUDARTAPI cudaThreadSynchronize(void);
+      |                                              ^~~~~~~~~~~~~~~~~~~~~

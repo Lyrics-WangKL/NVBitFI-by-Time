@@ -1,0 +1,12 @@
+hotspot.cu(102): warning: conversion from a string literal to "char *" is deprecated
+
+hotspot.cu(105): warning: conversion from a string literal to "char *" is deprecated
+
+hotspot.cu(325): warning: conversion from a string literal to "char *" is deprecated
+
+hotspot.cu(102): warning: conversion from a string literal to "char *" is deprecated
+
+hotspot.cu(105): warning: conversion from a string literal to "char *" is deprecated
+
+hotspot.cu(325): warning: conversion from a string literal to "char *" is deprecated
+
