@@ -8,13 +8,13 @@ verbose = False
 detectors = True
 # Keep per-app injection logs: This can be helpful for debugging. If this flag is set to false, per-injection logs will be deleted. A detailed summary will be captured in the results file. 
 keep_logs = True
-# Dummy run only inject 10 faults per app
-dummy_run = True
+# Dummy run only inject 5 faults per app
+dummy_run = False # We will run the real tests, set dummy to false
 
 #########################################################################
 # Create parameters object, Override FI setups parameters: number of injection, threshold, timeout
 #########################################################################
-params_obj = UserParameters(injections=1000, threshold_jobs=384, timeout_threshold=10, dummy=dummy_run)
+params_obj = UserParameters(injections=1000, threshold_jobs=100, timeout_threshold=10, dummy=dummy_run)
 NUM_INJECTIONS = params_obj.injections
 THRESHOLD_JOBS = params_obj.threshold_job
 TIMEOUT_THRESHOLD = params_obj.timeout
@@ -23,7 +23,7 @@ TIMEOUT_THRESHOLD = params_obj.timeout
 # Specify testbench, instruction type, fault model
 #######################################################################
 # selected_apps = ['bfs']
-selected_apps = ['gaussian', 'kmeans']
+selected_apps = ['darknet1img_tiny']
 selected_instruction_type = [G_GP]
 selected_faultmodel = [[FLIP_SINGLE_BIT]]
 

@@ -71,11 +71,14 @@ cd $CWD
 ###############################################################################
 printf "\nStep 0 (4): Run and collect output without instrumentation\n"
 
-# cd test-apps/darknet1img_tiny/
+# cd test-apps/darknet1img/
 # make 2> stderr.txt
 # make golden
 # cd $CWD
-
+cd test-apps/darknet1img_tiny/
+make 2> stderr.txt
+make golden
+cd $CWD
 # cd test-apps/vectorAdd/vectorAdd32_64/
 # make 2> stderr.txt
 # make golden
@@ -85,14 +88,23 @@ printf "\nStep 0 (4): Run and collect output without instrumentation\n"
 # make golden
 # cd $CWD
 
-cd test-apps/kmeans/
-make 2> stderr.txt
-make golden
-cd $CWD
-cd test-apps/gaussian/
-make 2> stderr.txt
-make golden
-cd $CWD
+# cd test-apps/kmeans/
+# make 2> stderr.txt
+# make golden
+# cd $CWD
+# cd test-apps/gaussian/
+# make 2> stderr.txt
+# make golden
+# cd $CWD
+
+# cd test-apps/reduction/reduction_small
+# make 2> stderr.txt
+# make golden
+# cd $CWD
+# cd test-apps/reduction/reduction_large
+# make 2> stderr.txt
+# make golden
+# cd $CWD
 
 
 ###############################################################################
@@ -104,12 +116,13 @@ cd $CWD
 # selected error injection model. 
 ###############################################################################
 cd scripts/
-printf "\nStep 1 (1): Profile the application\n"
+# printf "\nStep 1 (1): Profile the application\n"
 python run_profiler.py
 rm -f stdout.txt stderr.txt ### cleanup
 cd -
 
-scope="insts"
+# scope="insts"
+scope='kernels'
 groups=10
 
 cd scripts/
